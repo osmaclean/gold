@@ -1,0 +1,324 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ────────────────────────────────────────────────
+   Design Tokens — Tropa da Gold
+   Paleta: dourado / grafite / preto / branco suave
+   Tema dark default
+   ──────────────────────────────────────────────── */
+
+:root {
+  /* Marca */
+  --gold-50: #fbf6e6;
+  --gold-100: #f5e8b8;
+  --gold-200: #efd886;
+  --gold-300: #e8c651;
+  --gold-400: #e0b526;
+  --gold-500: #d4a017;
+  --gold-600: #b88716;
+  --gold-700: #936b13;
+  --gold-800: #74540f;
+  --gold-900: #533c0a;
+
+  --graphite-50: #f5f6f7;
+  --graphite-100: #e5e7eb;
+  --graphite-200: #cdd0d6;
+  --graphite-300: #a3a8b3;
+  --graphite-400: #71778a;
+  --graphite-500: #4e5468;
+  --graphite-600: #3a4053;
+  --graphite-700: #2a2f3f;
+  --graphite-800: #1c2030;
+  --graphite-900: #11141f;
+
+  --ink: #07080d;
+  --mist: #f4f3ef;
+  --accent-cyan: #61f1ff;
+  --accent-red: #ff4757;
+  --accent-green: #2ed573;
+
+  /* Raridade */
+  --rarity-bronze-from: #b07a3a;
+  --rarity-bronze-to: #6c4119;
+  --rarity-silver-from: #d6dbe3;
+  --rarity-silver-to: #6e7585;
+  --rarity-gold-from: #f5d066;
+  --rarity-gold-to: #b07c0a;
+  --rarity-gold-rare-from: #ffe98a;
+  --rarity-gold-rare-to: #b67203;
+  --rarity-toty-from: #1a223b;
+  --rarity-toty-to: #d4a017;
+  --rarity-icon-from: #ece7d8;
+  --rarity-icon-to: #6b6657;
+  --rarity-legendary-from: #ff4dff;
+  --rarity-legendary-to: #6ab7ff;
+
+  /* Tokens shadcn (dark) */
+  --background: var(--ink);
+  --foreground: var(--mist);
+  --card: rgba(255, 255, 255, 0.03);
+  --card-foreground: var(--mist);
+  --popover: #0e1018;
+  --popover-foreground: var(--mist);
+  --primary: var(--gold-500);
+  --primary-foreground: #1a1408;
+  --secondary: var(--graphite-800);
+  --secondary-foreground: var(--mist);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: var(--graphite-300);
+  --accent: rgba(212, 160, 23, 0.16);
+  --accent-foreground: var(--gold-200);
+  --destructive: var(--accent-red);
+  --destructive-foreground: #ffe8ea;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: var(--gold-400);
+  --radius: 0.75rem;
+
+  --chart-1: var(--gold-500);
+  --chart-2: var(--accent-cyan);
+  --chart-3: var(--accent-green);
+  --chart-4: #ff8a5b;
+  --chart-5: #b794f4;
+
+  --shadow-gold: 0 0 0 1px rgba(212, 160, 23, 0.22), 0 6px 28px -8px rgba(212, 160, 23, 0.55);
+  --shadow-card: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  --shadow-soft: 0 1px 0 0 rgba(255, 255, 255, 0.04) inset, 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-gold-50: var(--gold-50);
+  --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
+  --color-gold-800: var(--gold-800);
+  --color-gold-900: var(--gold-900);
+
+  --color-graphite-50: var(--graphite-50);
+  --color-graphite-100: var(--graphite-100);
+  --color-graphite-200: var(--graphite-200);
+  --color-graphite-300: var(--graphite-300);
+  --color-graphite-400: var(--graphite-400);
+  --color-graphite-500: var(--graphite-500);
+  --color-graphite-600: var(--graphite-600);
+  --color-graphite-700: var(--graphite-700);
+  --color-graphite-800: var(--graphite-800);
+  --color-graphite-900: var(--graphite-900);
+
+  --color-ink: var(--ink);
+  --color-mist: var(--mist);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  --font-display: var(--font-display), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(212, 160, 23, 0.35);
+    color: #fff7d6;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(212, 160, 23, 0.15);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 160, 23, 0.4);
+    background-clip: padding-box;
+  }
+}
+
+.bg-cinematic {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(212, 160, 23, 0.08), transparent 70%),
+    radial-gradient(40% 30% at 10% 100%, rgba(97, 241, 255, 0.05), transparent 70%),
+    radial-gradient(40% 30% at 90% 100%, rgba(212, 160, 23, 0.05), transparent 70%),
+    var(--ink);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+.bg-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+}
+
+.glass {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+    rgba(15, 17, 25, 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-soft);
+}
+
+.glass-strong {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(10, 11, 17, 0.7);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 160, 23, 0.5), transparent);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 16px rgba(212, 160, 23, 0.55), 0 0 2px rgba(212, 160, 23, 0.8);
+}
+
+.ring-gold-soft {
+  box-shadow: 0 0 0 1px rgba(212, 160, 23, 0.45), 0 8px 32px -8px rgba(212, 160, 23, 0.5);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+@keyframes shine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.text-shine {
+  background: linear-gradient(90deg, var(--gold-300) 0%, #ffffff 45%, var(--gold-300) 60%, var(--gold-500) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 6s linear infinite;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.6); }
+  50%       { box-shadow: 0 0 0 12px rgba(212, 160, 23, 0); }
+}
+.pulse-gold { animation: pulse-gold 2s ease-out infinite; }
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50%       { transform: translateY(-6px) rotate(0.5deg); }
+}
+.float-slow { animation: float-slow 6s ease-in-out infinite; }
+
+@keyframes holo-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.holo-overlay {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 100, 230, 0.0) 0%,
+    rgba(110, 230, 255, 0.18) 30%,
+    rgba(255, 230, 110, 0.22) 50%,
+    rgba(110, 230, 255, 0.18) 70%,
+    rgba(255, 100, 230, 0.0) 100%
+  );
+  background-size: 200% 200%;
+  animation: holo-shift 5s linear infinite;
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+}
+
+@keyframes ring-rotate {
+  to { transform: rotate(1turn); }
+}
+.ring-rotate { animation: ring-rotate 10s linear infinite; }
+
+.perspective-1200 { perspective: 1200px; }
+.preserve-3d     { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180    { transform: rotateY(180deg); }
+.transition-3d   { transition: transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1); }

@@ -1,0 +1,400 @@
+// Tropa da Gold — modelagem completa
+// Banco: Postgres (Supabase)
+// ORM: Prisma 6
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+//  USERS & AUTH
+// ─────────────────────────────────────────────
+
+enum Role {
+  PLAYER
+  ADMIN
+}
+
+enum Position {
+  ENTRY
+  RIFLER
+  AWPER
+  SUPPORT
+  IGL
+  LURKER
+}
+
+model User {
+  id          String   @id @default(cuid())
+  supabaseId  String   @unique
+  email       String   @unique
+  nickname    String   @unique
+  bio         String?
+  avatarUrl   String?
+  role        Role     @default(PLAYER)
+  steamId     String?
+  discordId   String?
+  level       Int      @default(1)
+  xp          Int      @default(0)
+  elo         Int      @default(1000)
+  isActive    Boolean  @default(true)
+  joinedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stats           PlayerStats?
+  card            Card?
+  matchEntries    MatchPlayer[]
+  achievements    PlayerAchievement[]
+  badges          PlayerBadge[]
+  seasonRanks     SeasonRank[]
+  mvpMatches      Match[]              @relation("MatchMVP")
+  createdMatches  Match[]              @relation("MatchCreator")
+  captainOf       Team[]               @relation("TeamCaptain")
+  teamMemberships TeamMember[]
+
+  @@index([nickname])
+  @@index([elo])
+}
+
+// ─────────────────────────────────────────────
+//  STATS AGREGADAS (lifetime)
+// ─────────────────────────────────────────────
+
+model PlayerStats {
+  userId            String  @id
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchesPlayed     Int     @default(0)
+  wins              Int     @default(0)
+  losses            Int     @default(0)
+  ties              Int     @default(0)
+  kills             Int     @default(0)
+  deaths            Int     @default(0)
+  assists           Int     @default(0)
+  headshots         Int     @default(0)
+  damage            Int     @default(0)
+  clutchesWon       Int     @default(0)
+  clutchesAttempted Int     @default(0)
+  openingKills      Int     @default(0)
+  openingDeaths     Int     @default(0)
+  awpKills          Int     @default(0)
+  flashAssists      Int     @default(0)
+  utilityDamage     Int     @default(0)
+  mvps              Int     @default(0)
+  aces              Int     @default(0)
+  longestWinStreak  Int     @default(0)
+  currentWinStreak  Int     @default(0)
+  longestLossStreak Int     @default(0)
+  currentLossStreak Int     @default(0)
+  updatedAt         DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+//  CARTAS (FUT-style)
+// ─────────────────────────────────────────────
+
+enum Rarity {
+  BRONZE
+  SILVER
+  GOLD
+  GOLD_RARE
+  TOTY
+  ICON
+  LEGENDARY
+}
+
+model Card {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rarity         Rarity   @default(BRONZE)
+  edition        String   @default("base") // "base" | "toty" | "halloween" | "icon" | ...
+  overall        Int      @default(60)
+  aim            Int      @default(60)
+  clutch         Int      @default(60)
+  support        Int      @default(60)
+  movement       Int      @default(60)
+  gameSense      Int      @default(60)
+  entry          Int      @default(60)
+  awp            Int      @default(60)
+  communication  Int      @default(60)
+  position       Position @default(RIFLER)
+  favoriteMap    String?
+  favoriteWeapon String?
+  isHolographic  Boolean  @default(false)
+  version        Int      @default(1)
+  artworkUrl     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  snapshots CardSnapshot[]
+
+  @@index([overall])
+  @@index([rarity])
+}
+
+model CardSnapshot {
+  id        String   @id @default(cuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  overall   Int
+  rarity    Rarity
+  payload   Json
+  reason    String? // "match_played" | "admin_edit" | "season_promotion"
+  createdAt DateTime @default(now())
+
+  @@index([cardId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+//  SEASONS
+// ─────────────────────────────────────────────
+
+enum SeasonStatus {
+  UPCOMING
+  ACTIVE
+  FINISHED
+}
+
+model Season {
+  id          String       @id @default(cuid())
+  number      Int          @unique
+  name        String
+  description String?
+  bannerUrl   String?
+  status      SeasonStatus @default(UPCOMING)
+  startsAt    DateTime
+  endsAt      DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  matches Match[]
+  ranks   SeasonRank[]
+  events  Event[]
+}
+
+model SeasonRank {
+  id        String   @id @default(cuid())
+  seasonId  String
+  userId    String
+  elo       Int      @default(1000)
+  rank      Int      @default(0)
+  trophy    String? // "champion" | "runner-up" | "top-3" | ...
+  rewards   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, userId])
+  @@index([seasonId, elo])
+}
+
+// ─────────────────────────────────────────────
+//  MATCHES
+// ─────────────────────────────────────────────
+
+enum MatchMode {
+  MR12
+  MR15
+  WINGMAN
+  AIM_MAP
+  CUSTOM
+}
+
+enum TeamSide {
+  TEAM_A
+  TEAM_B
+}
+
+enum RoundType {
+  NORMAL
+  PISTOL
+  ECO
+  FORCE
+  CLUTCH
+  ACE
+  ANTI_ECO
+}
+
+model Match {
+  id          String    @id @default(cuid())
+  seasonId    String?
+  season      Season?   @relation(fields: [seasonId], references: [id])
+  map         String
+  mode        MatchMode @default(MR12)
+  playedAt    DateTime
+  scoreTeamA  Int
+  scoreTeamB  Int
+  winningTeam TeamSide?
+  isDraw      Boolean   @default(false)
+  mvpUserId   String?
+  mvp         User?     @relation("MatchMVP", fields: [mvpUserId], references: [id])
+  highlights  String?
+  notes       String?
+  validated   Boolean   @default(false)
+  createdById String
+  createdBy   User      @relation("MatchCreator", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  players MatchPlayer[]
+  rounds  Round[]
+
+  @@index([playedAt])
+  @@index([seasonId])
+}
+
+model MatchPlayer {
+  id           String   @id @default(cuid())
+  matchId      String
+  userId       String
+  team         TeamSide
+  kills        Int      @default(0)
+  deaths       Int      @default(0)
+  assists      Int      @default(0)
+  headshots    Int      @default(0)
+  damage       Int      @default(0)
+  clutchesWon  Int      @default(0)
+  openingKills Int      @default(0)
+  openingDeaths Int     @default(0)
+  awpKills     Int      @default(0)
+  flashAssists Int      @default(0)
+  utilityDamage Int     @default(0)
+  rating       Float    @default(1.0)
+  adr          Float    @default(0)
+  kast         Float    @default(0)
+  isMVP        Boolean  @default(false)
+  eloDelta     Int      @default(0)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@index([userId])
+}
+
+model Round {
+  id      String    @id @default(cuid())
+  matchId String
+  number  Int
+  winner  TeamSide
+  type    RoundType @default(NORMAL)
+  bombPlanted Boolean @default(false)
+  match   Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, number])
+}
+
+// ─────────────────────────────────────────────
+//  ACHIEVEMENTS & BADGES
+// ─────────────────────────────────────────────
+
+model Achievement {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  icon        String // lucide name ou path
+  rarity      Rarity   @default(BRONZE)
+  xpReward    Int      @default(50)
+  criteria    Json // ex: { "type": "clutch_wins", "threshold": 10 }
+  hidden      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  unlocks PlayerAchievement[]
+}
+
+model PlayerAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  icon        String
+  color       String   @default("#D4AF37")
+  createdAt   DateTime @default(now())
+
+  awards PlayerBadge[]
+}
+
+model PlayerBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeId     String
+  awardedAt   DateTime @default(now())
+  awardedById String?
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+// ─────────────────────────────────────────────
+//  EVENTS & TEAMS (estrutura para torneios)
+// ─────────────────────────────────────────────
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  FINISHED
+  CANCELLED
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  description String?
+  bannerUrl   String?
+  format      String      @default("single-elim") // single-elim | double-elim | swiss | round-robin
+  status      EventStatus @default(UPCOMING)
+  startsAt    DateTime
+  endsAt      DateTime?
+  seasonId    String?
+  season      Season?     @relation(fields: [seasonId], references: [id])
+  prizePool   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Team {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  tag       String       @unique
+  logoUrl   String?
+  captainId String
+  captain   User         @relation("TeamCaptain", fields: [captainId], references: [id])
+  members   TeamMember[]
+  createdAt DateTime     @default(now())
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  userId   String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
