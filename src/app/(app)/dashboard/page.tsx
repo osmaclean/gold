@@ -10,7 +10,8 @@ import { KpiCard } from "@/components/feature/kpi-card"
 import { SectionHeading } from "@/components/feature/section-heading"
 import { EmptyState } from "@/components/feature/empty-state"
 import { MatchRow } from "@/components/feature/match-row"
-import { PlayerCard, fromPrismaCard } from "@/components/cards/player-card"
+import { PlayerCard } from "@/components/cards/player-card"
+import { fromPrismaCard } from "@/components/cards/player-card-data"
 import { LevelBar } from "@/components/cards/level-bar"
 import { RankBadge } from "@/components/cards/rank-badge"
 import { EloLineChart } from "@/components/charts/elo-line-chart"
@@ -42,33 +43,36 @@ export default async function DashboardPage() {
   const winrate = stats ? safeDivide(stats.wins, Math.max(stats.matchesPlayed, 1)) : 0
   const clutchRate = stats ? safeDivide(stats.clutchesWon, Math.max(stats.clutchesAttempted, 1)) : 0
 
-  let runningElo = 1000
-  const eloPoints = userSnapshots.map((s) => {
-    runningElo += s.eloDelta
-    return {
-      date: new Date(s.match.playedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
-      elo: Math.max(0, runningElo),
-    }
-  })
+  const eloPoints = userSnapshots.reduce<{ date: string; elo: number }[]>((acc, s) => {
+    const previous = acc.length > 0 ? acc[acc.length - 1].elo : 1000
+    acc.push({
+      date: new Date(s.match.playedAt).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "short",
+      }),
+      elo: Math.max(0, previous + s.eloDelta),
+    })
+    return acc
+  }, [])
 
   return (
     <div className="flex flex-col gap-8">
       {/* Hero */}
-      <section className="grid lg:grid-cols-[1fr,auto] gap-6 items-stretch">
-        <Card className="p-6 lg:p-8 relative overflow-hidden">
-          <div className="absolute -top-32 -right-32 size-64 rounded-full bg-gold-500/20 blur-3xl pointer-events-none" />
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
+      <section className="grid items-stretch gap-6 lg:grid-cols-[1fr,auto]">
+        <Card className="relative overflow-hidden p-6 lg:p-8">
+          <div className="pointer-events-none absolute -top-32 -right-32 size-64 rounded-full bg-gold-500/20 blur-3xl" />
+          <div className="flex items-center gap-2 text-[11px] tracking-widest text-muted-foreground uppercase">
             <Sparkles className="size-3.5 text-gold-300" />
             Bem-vindo de volta, soldado
           </div>
-          <h1 className="font-display text-4xl md:text-5xl tracking-widest mt-2 text-shine">
+          <h1 className="text-shine mt-2 font-display text-4xl tracking-widest md:text-5xl">
             {user.nickname.toUpperCase()}
           </h1>
-          <p className="text-muted-foreground mt-2 max-w-xl text-sm">
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             {user.bio ??
               "Acompanhe ranking, partidas, conquistas e a evolução da sua carta na Tropa da Gold."}
           </p>
-          <div className="flex flex-wrap items-center gap-3 mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <RankBadge elo={user.elo} />
             <Badge variant="outline">{stats?.matchesPlayed ?? 0} partidas</Badge>
             <Badge variant="success">{stats?.wins ?? 0} vitórias</Badge>
@@ -89,21 +93,26 @@ export default async function DashboardPage() {
       </section>
 
       {/* KPIs */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="K/D" value={kd.toFixed(2)} icon={Swords} accent="gold" />
-        <KpiCard label="HS%" value={formatPercent(hsRate, 0)} icon={Crown} accent="cyan" />
-        <KpiCard label="Winrate" value={formatPercent(winrate, 0)} icon={TrendingUp} accent="green" />
+      <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <KpiCard label="K/D" value={kd.toFixed(2)} icon={<Swords />} accent="gold" />
+        <KpiCard label="HS%" value={formatPercent(hsRate, 0)} icon={<Crown />} accent="cyan" />
+        <KpiCard
+          label="Winrate"
+          value={formatPercent(winrate, 0)}
+          icon={<TrendingUp />}
+          accent="green"
+        />
         <KpiCard
           label="Clutch %"
           value={formatPercent(clutchRate, 0)}
-          icon={Flame}
+          icon={<Flame />}
           accent={clutchRate >= 0.5 ? "gold" : "red"}
         />
       </section>
 
       {/* Charts + MVP */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-6">
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Card className="p-6 lg:col-span-2">
           <SectionHeading title="Evolução do Elo" description="Sua jornada de ranking." />
           <EloLineChart data={eloPoints} />
         </Card>
@@ -111,14 +120,20 @@ export default async function DashboardPage() {
         <Card className="p-6">
           <SectionHeading title="MVP da Semana" />
           {mvpWeek ? (
-            <Link href={`/jogadores/${mvpWeek.nickname}`} className="flex items-center gap-4 group">
+            <Link href={`/jogadores/${mvpWeek.nickname}`} className="group flex items-center gap-4">
               <Avatar className="size-14 ring-2 ring-gold-500/40 group-hover:ring-gold-300">
-                {mvpWeek.avatarUrl ? <AvatarImage src={mvpWeek.avatarUrl} alt={mvpWeek.nickname} /> : null}
+                {mvpWeek.avatarUrl ? (
+                  <AvatarImage src={mvpWeek.avatarUrl} alt={mvpWeek.nickname} />
+                ) : null}
                 <AvatarFallback>{pickInitials(mvpWeek.nickname)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-display text-xl tracking-wide">{mvpWeek.nickname.toUpperCase()}</p>
-                <p className="text-xs text-muted-foreground">{mvpWeek.card?.overall ?? "—"} OVERALL</p>
+                <p className="font-display text-xl tracking-wide">
+                  {mvpWeek.nickname.toUpperCase()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {mvpWeek.card?.overall ?? "—"} OVERALL
+                </p>
                 <Badge variant="default" className="mt-2">
                   <Crown className="size-3" /> Em chamas
                 </Badge>
@@ -131,7 +146,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Ranking + Últimas partidas */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="p-6 lg:col-span-1">
           <SectionHeading
             title="Top 10"
@@ -143,7 +158,11 @@ export default async function DashboardPage() {
             }
           />
           {ranking.length === 0 ? (
-            <EmptyState icon={Trophy} title="Ranking vazio" description="Joguem a primeira partida pra abrir o placar." />
+            <EmptyState
+              icon={Trophy}
+              title="Ranking vazio"
+              description="Joguem a primeira partida pra abrir o placar."
+            />
           ) : (
             <ol className="flex flex-col gap-2">
               {ranking.slice(0, 10).map((r, idx) => {
@@ -153,19 +172,25 @@ export default async function DashboardPage() {
                   <li key={player.id}>
                     <Link
                       href={`/jogadores/${player.nickname}`}
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-white/[0.04] transition-colors"
+                      className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-white/[0.04]"
                     >
-                      <span className="w-6 font-display text-lg text-gold-300 text-center numeric">
+                      <span className="numeric w-6 text-center font-display text-lg text-gold-300">
                         {idx + 1}
                       </span>
                       <Avatar className="size-8">
-                        {player.avatarUrl ? <AvatarImage src={player.avatarUrl} alt={player.nickname} /> : null}
-                        <AvatarFallback className="text-[9px]">{pickInitials(player.nickname)}</AvatarFallback>
+                        {player.avatarUrl ? (
+                          <AvatarImage src={player.avatarUrl} alt={player.nickname} />
+                        ) : null}
+                        <AvatarFallback className="text-[9px]">
+                          {pickInitials(player.nickname)}
+                        </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{player.nickname}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{player.nickname}</p>
                       </div>
-                      <span className="text-xs numeric text-muted-foreground">{formatNumber(elo)}</span>
+                      <span className="numeric text-xs text-muted-foreground">
+                        {formatNumber(elo)}
+                      </span>
                     </Link>
                   </li>
                 )

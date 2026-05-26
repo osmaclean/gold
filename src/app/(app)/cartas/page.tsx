@@ -3,7 +3,8 @@ import { db } from "@/lib/db"
 import { Card } from "@/components/ui/card"
 import { SectionHeading } from "@/components/feature/section-heading"
 import { EmptyState } from "@/components/feature/empty-state"
-import { PlayerCard, fromPrismaCard } from "@/components/cards/player-card"
+import { PlayerCard } from "@/components/cards/player-card"
+import { fromPrismaCard } from "@/components/cards/player-card-data"
 import { IdCard } from "lucide-react"
 
 export const metadata = { title: "Cartas" }
@@ -17,15 +18,22 @@ export default async function CardsPage() {
   if (cards.length === 0) {
     return (
       <Card>
-        <EmptyState icon={IdCard} title="Sem cartas ainda" description="Quando os players entrarem, as cartas aparecem aqui." />
+        <EmptyState
+          icon={IdCard}
+          title="Sem cartas ainda"
+          description="Quando os players entrarem, as cartas aparecem aqui."
+        />
       </Card>
     )
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionHeading title="Coleção da Tropa" description="Todas as cartas no plantel — ordenadas por overall." />
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+      <SectionHeading
+        title="Coleção da Tropa"
+        description="Todas as cartas no plantel — ordenadas por overall."
+      />
+      <div className="grid grid-cols-2 justify-items-center gap-6 md:grid-cols-3 lg:grid-cols-4">
         {cards.map((c) => (
           <Link key={c.id} href={`/cartas/${c.id}`}>
             <PlayerCard

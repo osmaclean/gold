@@ -6,67 +6,7 @@ import { motion } from "framer-motion"
 import { cn, pickInitials } from "@/lib/utils"
 import { RARITY_LABELS, POSITION_LABELS, RARITY_GRADIENTS } from "@/lib/constants"
 import { StatRadar } from "@/components/charts/stat-radar"
-import type { Card as PrismaCard, Rarity, Position } from "@prisma/client"
-
-export interface PlayerCardData {
-  nickname: string
-  avatarUrl?: string | null
-  position: Position
-  overall: number
-  rarity: Rarity
-  edition?: string
-  isHolographic?: boolean
-  stats: {
-    aim: number
-    clutch: number
-    support: number
-    movement: number
-    gameSense: number
-    entry: number
-    awp: number
-    communication: number
-  }
-}
-
-export function fromPrismaCard(
-  card: Pick<
-    PrismaCard,
-    | "rarity"
-    | "edition"
-    | "overall"
-    | "aim"
-    | "clutch"
-    | "support"
-    | "movement"
-    | "gameSense"
-    | "entry"
-    | "awp"
-    | "communication"
-    | "position"
-    | "isHolographic"
-  >,
-  user: { nickname: string; avatarUrl: string | null }
-): PlayerCardData {
-  return {
-    nickname: user.nickname,
-    avatarUrl: user.avatarUrl,
-    position: card.position,
-    overall: card.overall,
-    rarity: card.rarity,
-    edition: card.edition,
-    isHolographic: card.isHolographic,
-    stats: {
-      aim: card.aim,
-      clutch: card.clutch,
-      support: card.support,
-      movement: card.movement,
-      gameSense: card.gameSense,
-      entry: card.entry,
-      awp: card.awp,
-      communication: card.communication,
-    },
-  }
-}
+import type { PlayerCardData } from "@/components/cards/player-card-data"
 
 interface PlayerCardProps {
   data: PlayerCardData
@@ -115,7 +55,7 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
   return (
     <div className={cn("relative", sizeMap[size], className)}>
       <div
-        className="perspective-1200 w-full h-full"
+        className="perspective-1200 h-full w-full"
         onClick={() => interactive && setFlipped((f) => !f)}
         role="button"
         tabIndex={0}
@@ -124,40 +64,40 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
           ref={ref}
           onMouseMove={onMouseMove}
           onMouseLeave={onMouseLeave}
-          className={cn("preserve-3d relative w-full h-full transition-3d")}
+          className={cn("preserve-3d transition-3d relative h-full w-full")}
           style={{ transform: flipped ? "rotateY(180deg)" : undefined }}
         >
           {/* FRONT */}
-          <div className="backface-hidden absolute inset-0">
+          <div className="absolute inset-0 backface-hidden">
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               style={cardStyle}
               className={cn(
-                "relative w-full h-full rounded-2xl overflow-hidden shadow-[0_30px_60px_-25px_rgba(0,0,0,0.9)]",
+                "relative h-full w-full overflow-hidden rounded-2xl shadow-[0_30px_60px_-25px_rgba(0,0,0,0.9)]",
                 "bg-gradient-to-br",
-                gradient
+                gradient,
               )}
             >
               {/* Borda interna */}
-              <div className="absolute inset-[3px] rounded-[14px] bg-gradient-to-br from-black/40 via-black/20 to-black/60 flex flex-col">
+              <div className="absolute inset-[3px] flex flex-col rounded-[14px] bg-gradient-to-br from-black/40 via-black/20 to-black/60">
                 {/* Top stripe */}
-                <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">
+                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
                   <div className="flex flex-col leading-none">
-                    <span className="font-display text-5xl text-glow-gold numeric drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+                    <span className="text-glow-gold numeric font-display text-5xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
                       {data.overall}
                     </span>
-                    <span className="text-[10px] uppercase tracking-widest text-white/90 mt-1">
+                    <span className="mt-1 text-[10px] tracking-widest text-white/90 uppercase">
                       {POSITION_LABELS[data.position]}
                     </span>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-white/70">
+                    <p className="text-[9px] tracking-[0.2em] text-white/70 uppercase">
                       {RARITY_LABELS[data.rarity]}
                     </p>
                     {data.edition && data.edition !== "base" && (
-                      <p className="text-[9px] uppercase tracking-[0.2em] text-white/90 mt-1">
+                      <p className="mt-1 text-[9px] tracking-[0.2em] text-white/90 uppercase">
                         {data.edition.toUpperCase()}
                       </p>
                     )}
@@ -165,8 +105,8 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
                 </div>
 
                 {/* Avatar */}
-                <div className="flex-1 flex items-center justify-center relative px-4 py-2">
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden ring-2 ring-white/20 bg-black/40">
+                <div className="relative flex flex-1 items-center justify-center px-4 py-2">
+                  <div className="relative h-32 w-32 overflow-hidden rounded-full bg-black/40 ring-2 ring-white/20">
                     {data.avatarUrl ? (
                       <Image
                         src={data.avatarUrl}
@@ -185,13 +125,13 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
 
                 {/* Nickname */}
                 <div className="px-4 text-center">
-                  <h3 className="font-display text-2xl tracking-wider text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] truncate">
+                  <h3 className="truncate font-display text-2xl tracking-wider text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
                     {data.nickname.toUpperCase()}
                   </h3>
                 </div>
 
                 {/* Stats grid */}
-                <div className="px-4 py-3 grid grid-cols-4 gap-y-1.5 gap-x-3 text-[10px] uppercase tracking-wider text-white/85">
+                <div className="grid grid-cols-4 gap-x-3 gap-y-1.5 px-4 py-3 text-[10px] tracking-wider text-white/85 uppercase">
                   <StatRow label="AIM" value={data.stats.aim} />
                   <StatRow label="CLU" value={data.stats.clutch} />
                   <StatRow label="ENT" value={data.stats.entry} />
@@ -203,7 +143,7 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
                 </div>
 
                 {/* Bottom */}
-                <div className="px-4 py-2 border-t border-white/10 flex items-center justify-between text-[9px] uppercase tracking-widest text-white/60">
+                <div className="flex items-center justify-between border-t border-white/10 px-4 py-2 text-[9px] tracking-widest text-white/60 uppercase">
                   <span>Tropa da Gold</span>
                   <span>CS2</span>
                 </div>
@@ -211,24 +151,38 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
 
               {/* Glare */}
               {interactive && (
-                <div className="absolute inset-0 pointer-events-none rounded-2xl mix-blend-overlay" style={glareStyle} />
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-2xl mix-blend-overlay"
+                  style={glareStyle}
+                />
               )}
-              {showHolo && <div className="holo-overlay absolute inset-0 pointer-events-none rounded-2xl" />}
+              {showHolo && (
+                <div className="holo-overlay pointer-events-none absolute inset-0 rounded-2xl" />
+              )}
             </motion.div>
           </div>
 
           {/* BACK */}
-          <div className="backface-hidden rotate-y-180 absolute inset-0">
-            <div className={cn("relative w-full h-full rounded-2xl bg-gradient-to-br shadow-[0_30px_60px_-25px_rgba(0,0,0,0.9)]", gradient)}>
-              <div className="absolute inset-[3px] rounded-[14px] bg-black/70 flex flex-col p-5 gap-3">
+          <div className="absolute inset-0 rotate-y-180 backface-hidden">
+            <div
+              className={cn(
+                "relative h-full w-full rounded-2xl bg-gradient-to-br shadow-[0_30px_60px_-25px_rgba(0,0,0,0.9)]",
+                gradient,
+              )}
+            >
+              <div className="absolute inset-[3px] flex flex-col gap-3 rounded-[14px] bg-black/70 p-5">
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-2xl tracking-widest text-shine">{data.nickname.toUpperCase()}</span>
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">RADAR</span>
+                  <span className="text-shine font-display text-2xl tracking-widest">
+                    {data.nickname.toUpperCase()}
+                  </span>
+                  <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
+                    RADAR
+                  </span>
                 </div>
-                <div className="flex-1 grid place-items-center">
+                <div className="grid flex-1 place-items-center">
                   <StatRadar stats={data.stats} size={220} />
                 </div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground text-center">
+                <p className="text-center text-[10px] tracking-widest text-muted-foreground uppercase">
                   clique para voltar
                 </p>
               </div>
@@ -243,8 +197,8 @@ export function PlayerCard({ data, size = "md", interactive = true, className }:
 function StatRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center justify-between gap-1">
-      <span className="text-white/75 font-display tracking-widest">{label}</span>
-      <span className="text-white font-display text-base numeric">{value}</span>
+      <span className="font-display tracking-widest text-white/75">{label}</span>
+      <span className="numeric font-display text-base text-white">{value}</span>
     </div>
   )
 }

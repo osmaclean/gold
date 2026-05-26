@@ -2,7 +2,8 @@ import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { Card } from "@/components/ui/card"
 import { SectionHeading } from "@/components/feature/section-heading"
-import { PlayerCard, fromPrismaCard } from "@/components/cards/player-card"
+import { PlayerCard } from "@/components/cards/player-card"
+import { fromPrismaCard } from "@/components/cards/player-card-data"
 import { EditCardForm } from "./edit-card-form"
 
 type Params = Promise<{ id: string }>
@@ -18,14 +19,17 @@ export default async function AdminEditCardPage({ params }: { params: Params }) 
         title={`Editar carta — ${card.user.nickname}`}
         description="Stats AIM, CLUTCH, ENTRY e AWP são derivadas automaticamente. Aqui você ajusta o resto, edição e raridade especial."
       />
-      <section className="grid lg:grid-cols-[auto,1fr] gap-8 items-start">
+      <section className="grid items-start gap-8 lg:grid-cols-[auto,1fr]">
         <div className="mx-auto lg:mx-0">
           <PlayerCard
-            data={fromPrismaCard(card, { nickname: card.user.nickname, avatarUrl: card.user.avatarUrl })}
+            data={fromPrismaCard(card, {
+              nickname: card.user.nickname,
+              avatarUrl: card.user.avatarUrl,
+            })}
             size="md"
           />
         </div>
-        <Card className="p-6 w-full">
+        <Card className="w-full p-6">
           <EditCardForm
             cardId={card.id}
             initial={{

@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Bebas_Neue } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/providers/theme-provider"
 import { Toaster } from "@/providers/toaster"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { APP_NAME } from "@/lib/constants"
@@ -39,16 +38,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-cinematic font-sans text-foreground">
-        <ThemeProvider>
-          <TooltipProvider delayDuration={200}>
-            {children}
-            <Toaster />
-          </TooltipProvider>
-        </ThemeProvider>
+      <body className="bg-cinematic min-h-full font-sans text-foreground">
+        <TooltipProvider delayDuration={200}>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   )

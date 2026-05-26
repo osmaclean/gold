@@ -5,7 +5,8 @@ import { getPlayerByNickname } from "@/features/players/queries"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { PlayerCard, fromPrismaCard } from "@/components/cards/player-card"
+import { PlayerCard } from "@/components/cards/player-card"
+import { fromPrismaCard } from "@/components/cards/player-card-data"
 import { LevelBar } from "@/components/cards/level-bar"
 import { RankBadge } from "@/components/cards/rank-badge"
 import { AchievementCard } from "@/components/cards/achievement-card"
@@ -38,11 +39,14 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
   return (
     <div className="flex flex-col gap-8">
       {/* Hero */}
-      <section className="grid lg:grid-cols-[auto,1fr] gap-8 items-start">
+      <section className="grid items-start gap-8 lg:grid-cols-[auto,1fr]">
         {card && (
           <div className="mx-auto lg:mx-0">
             <PlayerCard
-              data={fromPrismaCard(card, { nickname: player.nickname, avatarUrl: player.avatarUrl })}
+              data={fromPrismaCard(card, {
+                nickname: player.nickname,
+                avatarUrl: player.avatarUrl,
+              })}
               size="lg"
             />
           </div>
@@ -50,11 +54,11 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
 
         <div className="flex flex-col gap-5">
           <div>
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Perfil</p>
-            <h1 className="font-display text-4xl md:text-6xl tracking-widest text-shine mt-1">
+            <p className="text-[11px] tracking-widest text-muted-foreground uppercase">Perfil</p>
+            <h1 className="text-shine mt-1 font-display text-4xl tracking-widest md:text-6xl">
               {player.nickname.toUpperCase()}
             </h1>
-            {player.bio && <p className="text-muted-foreground mt-2 max-w-2xl">{player.bio}</p>}
+            {player.bio && <p className="mt-2 max-w-2xl text-muted-foreground">{player.bio}</p>}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -76,7 +80,7 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
             <LevelBar totalXp={player.xp} />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat label="K/D" value={kd.toFixed(2)} />
             <Stat label="HS%" value={formatPercent(hsRate, 0)} />
             <Stat label="Winrate" value={formatPercent(winrate, 0)} />
@@ -94,7 +98,7 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
         </TabsList>
 
         <TabsContent value="stats">
-          <Card className="p-6 grid md:grid-cols-2 gap-6">
+          <Card className="grid gap-6 p-6 md:grid-cols-2">
             <div>
               <SectionHeading title="Atributos" description="Stats visuais da carta." />
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
@@ -113,7 +117,10 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
                 <NumberCell label="Kills" value={stats?.kills ?? 0} />
                 <NumberCell label="Deaths" value={stats?.deaths ?? 0} />
                 <NumberCell label="Headshots" value={stats?.headshots ?? 0} />
-                <NumberCell label="Clutches" value={`${stats?.clutchesWon ?? 0}/${stats?.clutchesAttempted ?? 0}`} />
+                <NumberCell
+                  label="Clutches"
+                  value={`${stats?.clutchesWon ?? 0}/${stats?.clutchesAttempted ?? 0}`}
+                />
                 <NumberCell label="MVPs" value={stats?.mvps ?? 0} />
                 <NumberCell label="Win streak" value={stats?.longestWinStreak ?? 0} />
                 <NumberCell label="AWP kills" value={stats?.awpKills ?? 0} />
@@ -126,7 +133,11 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
           <Card className="p-4">
             <SectionHeading title="Últimas partidas" />
             {player.matchEntries.length === 0 ? (
-              <EmptyState icon={MessageSquare} title="Sem partidas" description="Esse jogador ainda não disputou." />
+              <EmptyState
+                icon={MessageSquare}
+                title="Sem partidas"
+                description="Esse jogador ainda não disputou."
+              />
             ) : (
               <div className="flex flex-col gap-2">
                 {player.matchEntries.map((e) => (
@@ -156,9 +167,13 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
           <Card className="p-6">
             <SectionHeading title="Conquistas desbloqueadas" />
             {player.achievements.length === 0 ? (
-              <EmptyState icon={Trophy} title="Nenhuma conquista ainda" description="Continue jogando!" />
+              <EmptyState
+                icon={Trophy}
+                title="Nenhuma conquista ainda"
+                description="Continue jogando!"
+              />
             ) : (
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {player.achievements.map((a) => (
                   <AchievementCard
                     key={a.id}
@@ -178,18 +193,18 @@ export default async function PlayerProfilePage({ params }: { params: Params }) 
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="glass p-3 rounded-lg">
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
-      <p className="font-display text-2xl numeric mt-1">{value}</p>
+    <div className="glass rounded-lg p-3">
+      <p className="text-[10px] tracking-widest text-muted-foreground uppercase">{label}</p>
+      <p className="numeric mt-1 font-display text-2xl">{value}</p>
     </div>
   )
 }
 
 function NumberCell({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-white/[0.03]">
-      <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
-      <span className="font-display text-lg numeric">{value}</span>
+    <div className="flex items-center justify-between gap-3 rounded-md bg-white/[0.03] px-3 py-2">
+      <span className="text-xs tracking-widest text-muted-foreground uppercase">{label}</span>
+      <span className="numeric font-display text-lg">{value}</span>
     </div>
   )
 }
