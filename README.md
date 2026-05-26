@@ -93,6 +93,27 @@ Abra http://localhost:3000.
 | `pnpm db:migrate` | Cria migração + aplica |
 | `pnpm db:seed` | Roda `prisma/seed.ts` |
 | `pnpm db:studio` | Abre Prisma Studio |
+| `pnpm db:keepalive` | Faz um ping no banco pra evitar pausa do free tier |
+
+> Scripts de banco usam `dotenv-cli` pra carregar `.env.local` antes do Prisma
+> (Prisma só lê `.env` por padrão).
+
+## Keepalive (Supabase free tier)
+
+O free tier do Supabase pausa projetos após ~1 semana sem atividade.
+O repo tem um workflow `.github/workflows/keepalive.yml` que roda diariamente às
+09:00 Brasília e dispara `scripts/keepalive.ts` (`SELECT NOW()` + touch na season ativa).
+
+Pra ativar, basta cadastrar dois GitHub Secrets em
+**Settings → Secrets and variables → Actions**:
+
+| Secret | Valor |
+|---|---|
+| `DATABASE_URL` | Mesmo do `.env.local` (Transaction pooler, 6543) |
+| `DIRECT_URL` | Mesmo do `.env.local` (Session pooler, 5432) |
+
+Há também a rota pública `GET /api/keepalive` (retorna `{ ok, now }`) — útil pra plugar
+em Vercel Cron, UptimeRobot ou qualquer pinger HTTP quando o app estiver deployado.
 
 ## Estrutura
 

@@ -8,13 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
+    "db:push": "dotenv -e .env.local -- prisma db push",
+    "db:seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
+    "db:studio": "dotenv -e .env.local -- prisma studio",
+    "db:keepalive": "dotenv -e .env.local -- tsx scripts/keepalive.ts"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "dotenv -e .env.local -- tsx prisma/seed.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -70,6 +71,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "prettier": "^3.8.3",
